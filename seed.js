@@ -21,9 +21,9 @@ async function run(){
  const email=String(process.env.SEED_ADMIN_EMAIL).trim().toLowerCase();
  const password=String(process.env.SEED_ADMIN_PASSWORD);
  if(password.length<12) throw new Error('SEED_ADMIN_PASSWORD must be at least 12 characters');
- await User.findOneAndUpdate({email},{name:process.env.SEED_ADMIN_NAME||'ShopSphere Admin',email,password:await bcrypt.hash(password,12),role:'admin',isActive:true},{upsert:true,new:true,setDefaultsOnInsert:true});
+ await User.findOneAndUpdate({email},{name:process.env.SEED_ADMIN_NAME||'ShopSphere Admin',email,password:await bcrypt.hash(password,12),role:'admin',isActive:true},{upsert:true,returnDocument:'after',setDefaultsOnInsert:true});
  for(const product of products){await Product.updateOne({name:product.name,brand:product.brand},{$set:product}, {upsert:true});}
- console.log('✅ Seed complete'); console.log(`Admin email: ${email}`); console.log('Admin password: [from SEED_ADMIN_PASSWORD]');
+ console.log('Seed complete'); console.log(`Admin email: ${email}`); console.log('Admin password: [from SEED_ADMIN_PASSWORD]');
  await mongoose.connection.close();
 }
 run().catch(async e=>{console.error('Seed failed:',e.message);try{await mongoose.connection.close()}catch{}process.exit(1)});
