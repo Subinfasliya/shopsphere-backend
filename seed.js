@@ -18,8 +18,8 @@ const products = [
 
 async function run(){
  await connectDB();
- const email=String(process.env.SEED_ADMIN_EMAIL||'admin@example.com').trim().toLowerCase();
- const password=String(process.env.SEED_ADMIN_PASSWORD||'ChangeThisStrongPassword@2026');
+ const email=String(process.env.SEED_ADMIN_EMAIL).trim().toLowerCase();
+ const password=String(process.env.SEED_ADMIN_PASSWORD);
  if(password.length<12) throw new Error('SEED_ADMIN_PASSWORD must be at least 12 characters');
  await User.findOneAndUpdate({email},{name:process.env.SEED_ADMIN_NAME||'ShopSphere Admin',email,password:await bcrypt.hash(password,12),role:'admin',isActive:true},{upsert:true,new:true,setDefaultsOnInsert:true});
  for(const product of products){await Product.updateOne({name:product.name,brand:product.brand},{$set:product}, {upsert:true});}
