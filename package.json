@@ -1,0 +1,35 @@
+{
+  "name": "mern-ecommerce-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-style MERN e-commerce assignment backend",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "joi": "^18.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^9.10.0",
+    "morgan": "^1.10.1",
+    "@huggingface/inference": "4.13.28",
+    "cookie-parser": "^1.4.7",
+    "nodemailer": "^10.0.10",
+    "compression": "^1.8.1",
+    "express-mongo-sanitize": "^2.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
