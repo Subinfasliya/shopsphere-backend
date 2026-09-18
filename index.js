@@ -40,6 +40,7 @@ const sanitizeRequest = (req, res, next) => {
 
 const configuredOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',').map((item) => item.trim()).filter(Boolean);
+  
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? configuredOrigins
   : [...new Set([...configuredOrigins, 'http://localhost:5173', 'http://127.0.0.1:5173'])];
