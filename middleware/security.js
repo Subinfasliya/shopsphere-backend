@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 const csrfCookie = 'csrfToken';
 
-const sameSite = process.env.COOKIE_SAME_SITE || (process.env.NODE_ENV === 'production' ? 'none' : 'lax');
+const sameSite = process.env.NODE_ENV === 'production' ? 'none' : (process.env.COOKIE_SAME_SITE || 'lax');
 const secure = process.env.NODE_ENV === 'production' || String(process.env.COOKIE_SECURE).toLowerCase() === 'true';
 
 const csrfProtection = (req, res, next) => {
