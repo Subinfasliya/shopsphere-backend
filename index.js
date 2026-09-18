@@ -38,21 +38,36 @@ const sanitizeRequest = (req, res, next) => {
   next();
 };
 
+const normalizeOrigin = (value = '') => value.trim().replace(/\/+$/, '');
+
 const configuredOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
-  .split(',').map((item) => item.trim()).filter(Boolean);
-  
-const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? configuredOrigins
-  : [...new Set([...configuredOrigins, 'http://localhost:5173', 'http://127.0.0.1:5173'])];
+  .split(',')
+  .map((item) => normalizeOrigin(item))
+  .filter(Boolean);
+
+const allowedOrigins = [...new Set([
+  ...configuredOrigins,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://shopsphere-frontend-tawny.vercel.app',
+  'https://shopsphere-frontend.vercel.app',
+])];
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS origin not allowed'));
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = normalizeOrigin(origin);
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'X-CSRF-Token', 'X-Client-Request-Id'],
+  optionsSuccessStatus: 204,
 }));
 
 app.use(express.json({ limit: '1mb' }));
