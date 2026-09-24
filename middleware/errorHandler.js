@@ -4,8 +4,13 @@ const errorHandler = (err, req, res, next) => {
   const requestId = req.get('x-request-id') || crypto.randomUUID();
   console.error(`[${requestId}]`, err);
 
-  let statusCode = err.statusCode || 500;
+  let statusCode = err.statusCode || err.status || 500;
   let message = err.message || 'Internal server error';
+
+  if (err instanceof require('multer').MulterError) {
+    statusCode = 400;
+    message = err.code === 'LIMIT_FILE_SIZE' ? 'Image must be 5 MB or smaller' : 'Invalid image upload';
+  }
 
   if (err.name === 'ValidationError') {
     statusCode = 400;

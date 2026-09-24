@@ -2,6 +2,10 @@ const paypal = require('../services/paypalService');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
+const { normalizePaypalCurrency } = require('../utils/paypalConfig');
+
+const paypalCurrency = normalizePaypalCurrency(process.env.PAYPAL_CURRENCY);
+const paypalConversionRate = paypalCurrency === 'INR' ? 1 : Number(process.env.INR_TO_PAYPAL_RATE || 0.012);
 
 const releaseOrderInventory = async (order) => {
   if (!order?.inventoryReserved) return;
@@ -73,7 +77,8 @@ const config = async (req, res) => {
     data: {
       clientId: process.env.PAYPAL_CLIENT_ID_PUBLIC || process.env.PAYPAL_CLIENT_ID || '',
       environment: process.env.PAYPAL_ENV === 'production' ? 'production' : 'sandbox',
-      currency: process.env.PAYPAL_CURRENCY || 'USD',
+      currency: paypalCurrency,
+      conversionRate: paypalConversionRate,
       enabled: Boolean(process.env.PAYPAL_CLIENT_ID_PUBLIC || process.env.PAYPAL_CLIENT_ID),
     },
   });

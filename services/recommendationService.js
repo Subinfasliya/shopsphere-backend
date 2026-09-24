@@ -56,6 +56,7 @@ const getRecommendations = async (userId) => {
     const raw = await client.featureExtraction({
       model: process.env.HUGGINGFACE_MODEL || 'sentence-transformers/all-MiniLM-L6-v2',
       inputs,
+      provider: process.env.HUGGINGFACE_PROVIDER || 'hf-inference',
     });
 
     const vectors = Array.isArray(raw) ? raw.map((item) => {

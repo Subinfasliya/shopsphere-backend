@@ -61,6 +61,30 @@ const sendContactEmail = async ({ name, email, subject, message }) => {
   return { delivered: true };
 };
 
+const sendOrderOtpEmail = async ({ to, name, orderId, otp, type }) => {
+  const mailer = getTransporter();
+  const delivery = type === 'delivery';
+  const subject = delivery ? 'Confirm delivery for your ShopSphere order' : 'Confirm your ShopSphere return request';
+  const purpose = delivery ? 'confirm that you received your order' : 'confirm your return request';
+  const expiry = delivery ? '15 minutes' : '30 minutes';
+  const text = `Hi ${name || 'there'},\n\nUse OTP ${otp} to ${purpose}. Order: ${orderId}. This code expires in ${expiry}.`;
+  if (!mailer) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[DEV] ${type} OTP for ${to}, order ${orderId}: ${otp}`);
+      return { delivered: false, developmentOtp: otp };
+    }
+    throw new Error('Email service is not configured');
+  }
+  await mailer.sendMail({
+    from: process.env.MAIL_FROM || process.env.SMTP_USER,
+    to,
+    subject,
+    text,
+    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#111827"><h2>${subject}</h2><p>Hi ${name || 'there'},</p><p>Use this one-time password to ${purpose}:</p><p style="font-size:28px;font-weight:bold;letter-spacing:8px">${otp}</p><p>This code expires in ${expiry}.</p><p>Order: ${orderId}</p></div>`,
+  });
+  return { delivered: true };
+};
+
 const verifyEmailTransport = async () => {
   const mailer = getTransporter();
   if (!mailer) throw new Error('SMTP is not configured');
@@ -68,4 +92,4 @@ const verifyEmailTransport = async () => {
   return true;
 };
 
-module.exports = { sendPasswordResetEmail, sendContactEmail, verifyEmailTransport };
+module.exports = { sendPasswordResetEmail, sendContactEmail, sendOrderOtpEmail, verifyEmailTransport };

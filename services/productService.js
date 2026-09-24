@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const createError = require('../utils/createError');
+const Review = require('../models/Review');
+const Order = require('../models/Order');
 
 const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -66,4 +68,24 @@ const deleteProduct = async (id) => {
   return product;
 };
 const getCategories = async () => Product.distinct('category', { isActive: true });
-module.exports = { listProducts, getProductById, createProduct, updateProduct, deleteProduct, getCategories };
+
+const rateProduct = async ({ productId, userId, rating, comment = '' }) => {
+  if (!mongoose.isValidObjectId(productId)) throw createError(400, 'Invalid product id');
+  const product = await Product.findOne({ _id: productId, isActive: true });
+  if (!product) throw createError(404, 'Product not found');
+  const deliveredOrder = await Order.findOne({ user: userId, orderStatus: 'delivered', 'items.product': productId, returnStatus: { $in: ['none', 'rejected'] } }).select('_id');
+  if (!deliveredOrder) throw createError(403, 'You can rate products only after a delivered purchase');
+
+  await Review.findOneAndUpdate(
+    { product: productId, user: userId },
+    { $set: { rating, comment } },
+    { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true }
+  );
+  const [aggregate] = await Review.aggregate([{ $match: { product: new mongoose.Types.ObjectId(productId) } }, { $group: { _id: '$product', average: { $avg: '$rating' }, count: { $sum: 1 } } }]);
+  product.ratings = Number((aggregate?.average || 0).toFixed(1));
+  product.numReviews = aggregate?.count || 0;
+  await product.save();
+  return getProductById(productId);
+};
+
+module.exports = { listProducts, getProductById, createProduct, updateProduct, deleteProduct, getCategories, rateProduct };
